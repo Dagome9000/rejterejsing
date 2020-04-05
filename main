@@ -1,0 +1,137 @@
+import pygame
+import random
+from pygame.locals import *
+from math import inf as infinity
+import math
+resx=1024
+resy=800
+pygame.init()
+pygame.font.init
+font = pygame.font.Font(pygame.font.get_default_font(), 50)
+screen = pygame.display.set_mode((resx, resy))
+font = pygame.font.SysFont("Courier", 40)
+font2 = pygame.font.SysFont("Fixed Sys", 50)
+pygame.display.set_caption("ray")
+running = True
+
+
+#            R    G    B
+GRAY = (100, 100, 100)
+NAVYBLUE = (60, 60, 100)
+WHITE = (255, 255, 255)
+RED = (255, 0, 0)
+GREEN = (0, 150, 0)
+BLUE = (0, 0, 255)
+YELLOW = (255, 255, 0)
+ORANGE = (255, 128, 0)
+PURPLE = (255, 0, 255)
+CYAN = (0, 255, 255)
+BLACK = (0, 0, 0)
+sciany = [((100, 300), (600,300))
+          ]
+
+
+
+def linlen(x1, y1, x2, y2, x3, y3, x4, y4):
+    a=abs(x1-x2)+abs(y1-y2)
+    b=abs(x3-x4)+abs(y3-y4)
+    if a<b:
+        return True
+    else:
+        return False
+
+def styk(x1, y1, x2, y2, x3, y3, x4, y4):
+    dzielnik=((x1-x2)*(y3-y4)-(y1-y2)*(x3-x4))
+    if dzielnik==0:
+        return
+    t=((x1-x3)*(y3-y4)-(y1-y3)*(x3-x4))/dzielnik
+    u=-(((x1-x2)*(y1-y3)-(y1-y2)*(x1-x3))/dzielnik)
+    if 0<=t<=1 and 0<=u<=1:
+        return True
+    else:
+        return False
+def punktstyku(x1, y1, x2, y2, x3, y3, x4, y4):
+    dzielnik=((x1-x2)*(y3-y4)-(y1-y2)*(x3-x4))
+    if dzielnik==0:
+        return
+    px=((x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4))/dzielnik
+    py=((x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4))/dzielnik
+    return (px, py)
+
+def ray() :
+    liczbaPunktow=360
+    r=500
+    check=0
+    ps=[0,0]
+    for i in range(liczbaPunktow):
+
+        fi = i * 2 * math.pi / liczbaPunktow
+        x = mouse_pos[0] + r * math.cos(fi)
+        y = mouse_pos[1] + r * math.sin(fi)
+
+        for element in sciany :
+            if styk(x, y, mouse_pos[0], mouse_pos[1], element[0][0], element[0][1], element[1][0], element[1][1]):
+                check+=1
+                if check==1:
+                    temp1 = punktstyku(x, y, mouse_pos[0], mouse_pos[1], element[0][0], element[0][1], element[1][0],
+                              element[1][1])
+                if check>1:
+                    temp2 = punktstyku(x, y, mouse_pos[0], mouse_pos[1], element[0][0], element[0][1], element[1][0],
+                              element[1][1])
+
+
+        if check==0:
+            ps=(0,0)
+            pygame.draw.line(screen, WHITE, ((x), (y)), mouse_pos, 1)
+        if check>0:
+            if check>1:
+                if linlen(mouse_pos[0],mouse_pos[1], temp1[0], temp1[1], mouse_pos[0], mouse_pos[1], temp2[0], temp2[1]):
+                    pygame.draw.line(screen, RED, temp1, mouse_pos, 1)
+                elif linlen(mouse_pos[0],mouse_pos[1], temp1[0], temp1[1], mouse_pos[0], mouse_pos[1], temp2[0], temp2[1]) is False :
+                    pygame.draw.line(screen, GREEN, temp2, mouse_pos, 1)
+            elif check == 1 :
+                ps = temp1
+                pygame.draw.line(screen, BLUE, ps, mouse_pos, 1)
+
+
+        check=0
+
+
+
+
+def sciana():
+    for element in sciany:
+        pygame.draw.line(screen, RED, (element[0][0], element[0][1]), (element[1][0], element[1][1]), 5)
+class Zrodlo() :
+    def __init__( self, pos, kolor, rad ) :
+        self.pos = pos
+        self.kolor = kolor
+        self.rad = rad
+    def draw( self ) :
+        ray()
+        pygame.draw.circle(screen, self.kolor, self.pos, 20)
+
+
+
+tempsciana=[]
+mouse_pos=[0,0]
+kula = Zrodlo(mouse_pos, YELLOW, 20)
+
+while running :
+
+    screen.fill(BLACK)
+    kula.draw()
+    sciana()
+    for event in pygame.event.get() :
+        if event.type == pygame.QUIT :
+            running = False
+        if event.type == MOUSEBUTTONDOWN :
+            mouse_pos = pygame.mouse.get_pos()
+            tempsciana.append(mouse_pos)
+        if event.type == MOUSEMOTION:
+            mouse_pos = pygame.mouse.get_pos()
+            kula.pos=mouse_pos
+    if len(tempsciana)==2:
+        sciany.append(tempsciana)
+        tempsciana=[]
+    pygame.display.update()
