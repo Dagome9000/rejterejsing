@@ -27,18 +27,15 @@ ORANGE = (255, 128, 0)
 PURPLE = (255, 0, 255)
 CYAN = (0, 255, 255)
 BLACK = (0, 0, 0)
-sciany = [((100, 300), (600,300))
-          ]
+
+
+sciany = [((100, 300), (600,300))]
 
 
 
-def linlen(x1, y1, x2, y2, x3, y3, x4, y4):
-    a=abs(x1-x2)+abs(y1-y2)
-    b=abs(x3-x4)+abs(y3-y4)
-    if a<b:
-        return True
-    else:
-        return False
+def linlen(x1, y1, x2, y2):
+    a = abs(x1 - x2) + abs(y1 - y2)
+    return a
 
 def styk(x1, y1, x2, y2, x3, y3, x4, y4):
     dzielnik=((x1-x2)*(y3-y4)-(y1-y2)*(x3-x4))
@@ -60,48 +57,35 @@ def punktstyku(x1, y1, x2, y2, x3, y3, x4, y4):
 
 def ray() :
     liczbaPunktow=360
-    r=500
-    check=0
-    ps=[0,0]
+    r=400
+    lista=[]
+
     for i in range(liczbaPunktow):
 
         fi = i * 2 * math.pi / liczbaPunktow
         x = mouse_pos[0] + r * math.cos(fi)
         y = mouse_pos[1] + r * math.sin(fi)
-
-        for element in sciany :
+        record=infinity
+        pkt=None
+        for element in sciany:
             if styk(x, y, mouse_pos[0], mouse_pos[1], element[0][0], element[0][1], element[1][0], element[1][1]):
-                check+=1
-                if check==1:
-                    temp1 = punktstyku(x, y, mouse_pos[0], mouse_pos[1], element[0][0], element[0][1], element[1][0],
-                              element[1][1])
-                if check>1:
-                    temp2 = punktstyku(x, y, mouse_pos[0], mouse_pos[1], element[0][0], element[0][1], element[1][0],
-                              element[1][1])
-
-
-        if check==0:
-            ps=(0,0)
-            pygame.draw.line(screen, WHITE, ((x), (y)), mouse_pos, 1)
-        if check>0:
-            if check>1:
-                if linlen(mouse_pos[0],mouse_pos[1], temp1[0], temp1[1], mouse_pos[0], mouse_pos[1], temp2[0], temp2[1]):
-                    pygame.draw.line(screen, RED, temp1, mouse_pos, 1)
-                elif linlen(mouse_pos[0],mouse_pos[1], temp1[0], temp1[1], mouse_pos[0], mouse_pos[1], temp2[0], temp2[1]) is False :
-                    pygame.draw.line(screen, GREEN, temp2, mouse_pos, 1)
-            elif check == 1 :
-                ps = temp1
-                pygame.draw.line(screen, BLUE, ps, mouse_pos, 1)
-
-
-        check=0
-
-
+                temppkt = punktstyku(x, y, mouse_pos[0], mouse_pos[1], element[0][0], element[0][1], element[1][0],
+                                   element[1][1])
+                if linlen(temppkt[0],temppkt[1], mouse_pos[0], mouse_pos[1])<record:
+                    record=linlen(temppkt[0],temppkt[1], mouse_pos[0], mouse_pos[1])
+                    pkt=temppkt
+        if pkt:
+            pygame.draw.line(screen, WHITE, pkt, mouse_pos, 1)
+        else:
+            pygame.draw.line(screen, WHITE, (x,y), mouse_pos, 1)
 
 
 def sciana():
+
     for element in sciany:
+        numerek = font.render(str(sciany.index(element)), True, ORANGE)
         pygame.draw.line(screen, RED, (element[0][0], element[0][1]), (element[1][0], element[1][1]), 5)
+        screen.blit(numerek, element)
 class Zrodlo() :
     def __init__( self, pos, kolor, rad ) :
         self.pos = pos
@@ -131,6 +115,8 @@ while running :
         if event.type == MOUSEMOTION:
             mouse_pos = pygame.mouse.get_pos()
             kula.pos=mouse_pos
+    if len(tempsciana)==1:
+        pygame.draw.line(screen, PURPLE, tempsciana[0], mouse_pos, 11)
     if len(tempsciana)==2:
         sciany.append(tempsciana)
         tempsciana=[]
